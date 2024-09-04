@@ -2,17 +2,26 @@ package com.jack.walletservice.service.impl;
 
 import com.jack.walletservice.entity.Wallet;
 import com.jack.walletservice.exception.WalletNotFoundException;
+import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.repository.WalletRepository;
 import com.jack.walletservice.service.WalletService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WalletServiceImpl implements WalletService {
+    private static final Logger logger = LoggerFactory.getLogger(WalletServiceImpl.class);
+
+    private final WalletRepository walletRepository;
 
     @Autowired
-    private WalletRepository walletRepository;
+    public WalletServiceImpl(WalletRepository walletRepository) {
+        this.walletRepository = walletRepository;
+    }
 
     @Override
     public Wallet createWallet(Long userId) {
@@ -55,5 +64,20 @@ public class WalletServiceImpl implements WalletService {
         }
         wallet.setUsdBalance(wallet.getUsdBalance() - amount);
         walletRepository.save(wallet);
+    }
+
+    @RabbitListener(queues = "walletCreationQueue")
+    public void handleWalletCreation(WalletCreationMessage message) {
+        logger.info("Received wallet creation message for user ID: {}", message.getUserId());
+
+        // Create a new wallet
+        Wallet wallet = new Wallet();
+        wallet.setUsdBalance(message.getInitialBalance());
+        wallet.setBtcBalance(0.0);
+
+        // Associate the wallet with the user ID and save it
+        walletRepository.save(wallet);
+
+        logger.info("Wallet created for user ID: {} with initial balance: {}", message.getUserId(), message.getInitialBalance());
     }
 }

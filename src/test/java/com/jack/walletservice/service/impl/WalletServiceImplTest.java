@@ -2,6 +2,7 @@ package com.jack.walletservice.service.impl;
 
 import com.jack.walletservice.entity.Wallet;
 import com.jack.walletservice.exception.WalletNotFoundException;
+import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.repository.WalletRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -26,6 +29,8 @@ class WalletServiceImplTest {
     private WalletServiceImpl walletService;
 
     private Wallet wallet;
+
+    private static final Logger logger = LoggerFactory.getLogger(WalletServiceImplTest.class);
 
     @BeforeEach
     void setUp() {
@@ -127,5 +132,22 @@ class WalletServiceImplTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> walletService.debitWallet(1L, 1200.0));
         assertEquals("Insufficient USD balance.", exception.getMessage());
         verify(walletRepository, never()).save(wallet);
+    }
+
+    @Test
+    void handleWalletCreation_Success() {
+        // Arrange
+        WalletCreationMessage message = new WalletCreationMessage();
+        message.setUserId(1L);
+        message.setInitialBalance(1000.0);
+
+        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
+
+        // Act
+        walletService.handleWalletCreation(message);
+
+        // Assert
+        verify(walletRepository, times(1)).save(any(Wallet.class));
+        logger.info("Verified wallet creation listener is working.");
     }
 }
