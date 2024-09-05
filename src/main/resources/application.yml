@@ -22,9 +22,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    open-in-view: false  # Disable open-in-view to avoid potential performance issues
+    open-in-view: false  # Disable open-in-view to avoid performance issues
 
-  # RabbitMQ settings if Wallet Service needs to communicate with other services
+  # RabbitMQ settings for local development (communicating with other services)
   rabbitmq:
     host: localhost
     port: 5672
@@ -43,14 +43,14 @@ springdoc:
   swagger-ui:
     path: /swagger-ui-custom.html
 
-# Security settings specific to the Wallet Service
+# Security settings for the Wallet Service
 app:
   jwtSecret: Xb34fJd9kPbvmJc84mDkV9b3Xb4fJd9kPbvmJc84mDkV9b3Xb34fJd9kPbvmJc84
-  jwtExpirationMs: 3600000
+  jwtExpirationMs: 3600000  # 1 hour in milliseconds
 
 security:
   authentication:
-    enabled: true  # Enable authentication for Wallet Service
+    enabled: true  # Enable authentication in development mode
 
 # Docker profile (for running in containers)
 ---
@@ -71,23 +71,35 @@ spring:
     show-sql: true
     open-in-view: false  # Disable open-in-view in Docker as well
 
+  rabbitmq:
+    host: rabbitmq  # Connect to RabbitMQ container
+    port: 5672
+    username: guest
+    password: guest
+    queues:
+      walletCreationQueue: walletCreationQueue  # Ensure this matches the name in RabbitListener
+    exchange:
+      walletExchange: walletExchange
+    routing:
+      walletRoutingKey: walletRoutingKey
+
 # Logging level for the Wallet Service
 logging:
   level:
     com.jack.walletservice: INFO
 
-# SpringDoc settings for API documentation
+# SpringDoc settings for API documentation in Docker
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui-custom.html
 
-# Security settings specific to the Wallet Service
+# Security settings for Docker environment
 app:
   jwtSecret: Xb34fJd9kPbvmJc84mDkV9b3Xb4fJd9kPbvmJc84mDkV9b3Xb34fJd9kPbvmJc84
-  jwtExpirationMs: 3600000
+  jwtExpirationMs: 3600000  # 1 hour in milliseconds
 
 security:
   authentication:
-    enabled: true  # Enable authentication for Wallet Service
+    enabled: true  # Enable authentication in Docker environment

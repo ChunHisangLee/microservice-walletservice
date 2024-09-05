@@ -27,8 +27,9 @@ public class WalletServiceImpl implements WalletService {
     public Wallet createWallet(Long userId) {
         Wallet wallet = new Wallet();
         wallet.setUserId(userId);
-        wallet.setUsdBalance(1000.0); // Initial USD balance
+        wallet.setUsdBalance(0.0); // Initial USD balance
         wallet.setBtcBalance(0.0); // Initial BTC balance
+        logger.info("Wallet created for user ID: {}", userId);
         return walletRepository.save(wallet);
     }
 
@@ -53,31 +54,20 @@ public class WalletServiceImpl implements WalletService {
         Wallet wallet = getWalletByUserId(userId);
         wallet.setUsdBalance(wallet.getUsdBalance() + amount);
         walletRepository.save(wallet);
+        logger.info("Credited {} USD to wallet of user ID: {}", amount, userId);
     }
 
     @Transactional
     @Override
     public void debitWallet(Long userId, Double amount) {
         Wallet wallet = getWalletByUserId(userId);
+
         if (wallet.getUsdBalance() < amount) {
             throw new IllegalArgumentException("Insufficient USD balance.");
         }
+
         wallet.setUsdBalance(wallet.getUsdBalance() - amount);
         walletRepository.save(wallet);
-    }
-
-    @RabbitListener(queues = "walletCreationQueue")
-    public void handleWalletCreation(WalletCreationMessage message) {
-        logger.info("Received wallet creation message for user ID: {}", message.getUserId());
-
-        // Create a new wallet
-        Wallet wallet = new Wallet();
-        wallet.setUsdBalance(message.getInitialBalance());
-        wallet.setBtcBalance(0.0);
-
-        // Associate the wallet with the user ID and save it
-        walletRepository.save(wallet);
-
-        logger.info("Wallet created for user ID: {} with initial balance: {}", message.getUserId(), message.getInitialBalance());
+        logger.info("Debited {} USD from wallet of user ID: {}", amount, userId);
     }
 }

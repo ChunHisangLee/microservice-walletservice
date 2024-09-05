@@ -2,24 +2,43 @@ services:
   db:
     image: postgres:latest
     environment:
-      POSTGRES_DB: walletdb  # Changed to the wallet service's database
+      POSTGRES_DB: walletdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Ab123456
     ports:
-      - "5433:5432"
+      - "5434:5432"
     networks:
       - assignment-network
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  walletservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/walletdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Ab123456
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - assignment-network
+
   rabbitmq:
     image: rabbitmq:management
     ports:
-      - "5672:5672"   # RabbitMQ service port
-      - "15672:15672" # RabbitMQ management UI
+      - "5672:5672"
+      - "15672:15672"  # Management UI
     networks:
       - assignment-network
     environment:
@@ -31,32 +50,6 @@ services:
       timeout: 5s
       retries: 5
 
-  walletservice:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"  # Changed to match the port for the Wallet Service
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/walletdb  # Changed to walletdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: Ab123456
-      SPRING_PROFILES_ACTIVE: docker
-
-      # RabbitMQ Configuration
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
-
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - assignment-network
-
 networks:
   assignment-network:
-    driver: bridge
+    external: true
