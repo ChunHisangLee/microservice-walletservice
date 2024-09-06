@@ -27,9 +27,9 @@ public class Wallet {
 
     @Min(value = 0, message = "USD balance must be non-negative")
     @Column(name = "usd_balance", nullable = false, columnDefinition = "DECIMAL(18, 2) DEFAULT 0.0") // Added precision for financial data
-    private double usdBalance;
+    private Double usdBalance;
 
     @Min(value = 0, message = "BTC balance must be non-negative")
     @Column(name = "btc_balance", nullable = false, columnDefinition = "DECIMAL(18, 8) DEFAULT 0.0") // Increased precision for BTC
-    private double btcBalance;
+    private Double btcBalance;
 }
