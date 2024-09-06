@@ -1,13 +1,12 @@
 package com.jack.walletservice.service.impl;
 
 import com.jack.walletservice.entity.Wallet;
+import com.jack.walletservice.exception.InsufficientFundsException;
 import com.jack.walletservice.exception.WalletNotFoundException;
-import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.repository.WalletRepository;
 import com.jack.walletservice.service.WalletService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +22,7 @@ public class WalletServiceImpl implements WalletService {
         this.walletRepository = walletRepository;
     }
 
+    @Transactional
     @Override
     public Wallet createWallet(Long userId) {
         Wallet wallet = new Wallet();
@@ -43,31 +43,36 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public void updateWallet(Long userId, Double usdAmount, Double btcAmount) {
         Wallet wallet = getWalletByUserId(userId);
+        logger.info("Updating wallet for user ID: {} | USD: {} | BTC: {}", userId, usdAmount, btcAmount);
         wallet.setUsdBalance(wallet.getUsdBalance() + usdAmount);
         wallet.setBtcBalance(wallet.getBtcBalance() + btcAmount);
         walletRepository.save(wallet);
+        logger.info("Wallet updated successfully for user ID: {}", userId);
     }
 
     @Transactional
     @Override
     public void creditWallet(Long userId, Double amount) {
         Wallet wallet = getWalletByUserId(userId);
+        logger.info("Crediting {} USD to wallet of user ID: {}", amount, userId);
         wallet.setUsdBalance(wallet.getUsdBalance() + amount);
         walletRepository.save(wallet);
-        logger.info("Credited {} USD to wallet of user ID: {}", amount, userId);
+        logger.info("Wallet credited successfully for user ID: {}", userId);
     }
 
     @Transactional
     @Override
     public void debitWallet(Long userId, Double amount) {
         Wallet wallet = getWalletByUserId(userId);
+        logger.info("Debiting {} USD from wallet of user ID: {}", amount, userId);
 
         if (wallet.getUsdBalance() < amount) {
-            throw new IllegalArgumentException("Insufficient USD balance.");
+            logger.error("Insufficient balance. Attempted to debit {} USD from user ID: {}", amount, userId);
+            throw new InsufficientFundsException("Insufficient USD balance.");
         }
 
         wallet.setUsdBalance(wallet.getUsdBalance() - amount);
         walletRepository.save(wallet);
-        logger.info("Debited {} USD from wallet of user ID: {}", amount, userId);
+        logger.info("Wallet debited successfully for user ID: {}", userId);
     }
 }

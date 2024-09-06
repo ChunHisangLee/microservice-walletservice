@@ -1,30 +1,35 @@
 package com.jack.walletservice.config;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
+import com.jack.walletservice.receiver.RabbitMQReceiver;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
 
+    public static final String USER_CREATED_QUEUE = "user-created-queue";
+
     @Bean
-    public Queue walletCreationQueue() {
-        // Define the queue for wallet creation messages
-        return new Queue("walletCreationQueue", true);
+    public Queue userCreatedQueue() {
+        return new Queue(USER_CREATED_QUEUE, false);
     }
 
     @Bean
-    public DirectExchange walletExchange() {
-        // Define the direct exchange that will route the messages to the queue
-        return new DirectExchange("walletExchange");
+    public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
+                                                    MessageListenerAdapter listenerAdapter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setQueueNames(USER_CREATED_QUEUE);
+        container.setMessageListener(listenerAdapter);
+        return container;
     }
 
     @Bean
-    public Binding walletQueueBinding(Queue walletCreationQueue, DirectExchange walletExchange) {
-        // Bind the queue to the exchange with the specific routing key
-        return BindingBuilder.bind(walletCreationQueue).to(walletExchange).with("walletRoutingKey");
+    public MessageListenerAdapter listenerAdapter(RabbitMQReceiver receiver) {
+        return new MessageListenerAdapter(receiver, "receiveMessage");
     }
 }

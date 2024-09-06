@@ -133,21 +133,4 @@ class WalletServiceImplTest {
         assertEquals("Insufficient USD balance.", exception.getMessage());
         verify(walletRepository, never()).save(wallet);
     }
-
-    @Test
-    void handleWalletCreation_Success() {
-        // Arrange
-        WalletCreationMessage message = new WalletCreationMessage();
-        message.setUserId(1L);
-        message.setInitialBalance(1000.0);
-
-        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
-
-        // Act
-        walletService.handleWalletCreation(message);
-
-        // Assert
-        verify(walletRepository, times(1)).save(any(Wallet.class));
-        logger.info("Verified wallet creation listener is working.");
-    }
 }
