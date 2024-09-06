@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class WalletControllerTest {
@@ -76,7 +78,7 @@ class WalletControllerTest {
         // Assert
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Wallet updated successfully", response.getBody());
+        assertEquals("Wallet for user ID 1 updated successfully", response.getBody());
         verify(walletService, times(1)).updateWallet(1L, 200.0, 0.1);
     }
 }

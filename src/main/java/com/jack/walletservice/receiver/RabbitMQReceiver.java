@@ -1,7 +1,6 @@
 package com.jack.walletservice.receiver;
 
 import com.jack.walletservice.config.RabbitMQConfig;
-import com.jack.walletservice.entity.Wallet;
 import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.service.WalletService;
 import org.slf4j.Logger;
@@ -24,22 +23,16 @@ public class RabbitMQReceiver {
     @RabbitListener(queues = RabbitMQConfig.USER_CREATED_QUEUE)
     public void receiveMessage(WalletCreationMessage walletCreationMessage) {
         logger.info("Received User Created Event: <UserID: {}, Initial Balance: {}>", walletCreationMessage.getUserId(), walletCreationMessage.getInitialBalance());
-        // Call the method to create a wallet for the user
-        createWalletForUser(walletCreationMessage.getUserId(), walletCreationMessage.getInitialBalance());
-    }
 
-    private void createWalletForUser(Long userId, Double initialBalance) {
-        logger.info("Creating wallet for user: {}", userId);
+        try {
+            // Create a wallet for the user
+            walletService.createWallet(walletCreationMessage.getUserId());
 
-        // Simulate wallet creation logic
-        Wallet wallet = new Wallet();
-        wallet.setUserId(userId);
-        wallet.setUsdBalance(initialBalance);
-        wallet.setBtcBalance(0.0);
-
-        // Save wallet to the database using WalletService
-        walletService.createWallet(userId);
-
-        logger.info("Wallet created successfully for user: {}", userId);
+            // Credit the initial balance
+            walletService.creditWallet(walletCreationMessage.getUserId(), walletCreationMessage.getInitialBalance());
+            logger.info("Wallet created and credited with initial balance for user ID: {}", walletCreationMessage.getUserId());
+        } catch (Exception e) {
+            logger.error("Failed to process wallet creation message for user ID: {}. Error: {}", walletCreationMessage.getUserId(), e.getMessage(), e);
+        }
     }
 }

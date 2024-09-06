@@ -24,13 +24,16 @@ public class WalletServiceImpl implements WalletService {
 
     @Transactional
     @Override
-    public Wallet createWallet(Wallet wallet) {
-        wallet.setUsdBalance(wallet.getUsdBalance() == null ? 0.0 : wallet.getUsdBalance()); // Default USD balance
-        wallet.setBtcBalance(wallet.getBtcBalance() == null ? 0.0 : wallet.getBtcBalance()); // Default BTC balance
-        logger.info("Wallet created for user ID: {}", wallet.getUserId());
+    public Wallet createWallet(Long userId) {
+        Wallet wallet = new Wallet();
+        wallet.setUserId(userId);
+        wallet.setUsdBalance(0.0); // Default USD balance
+        wallet.setBtcBalance(0.0); // Default BTC balance
+        logger.info("Wallet created for user ID: {}", userId);
         return walletRepository.save(wallet);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Wallet getWalletByUserId(Long userId) {
         logger.info("Fetching wallet for user ID: {}", userId);

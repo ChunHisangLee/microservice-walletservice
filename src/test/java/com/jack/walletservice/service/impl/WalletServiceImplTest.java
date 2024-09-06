@@ -1,8 +1,8 @@
 package com.jack.walletservice.service.impl;
 
 import com.jack.walletservice.entity.Wallet;
+import com.jack.walletservice.exception.InsufficientFundsException;
 import com.jack.walletservice.exception.WalletNotFoundException;
-import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.repository.WalletRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,7 +129,7 @@ class WalletServiceImplTest {
         when(walletRepository.findByUserId(anyLong())).thenReturn(Optional.of(wallet));
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> walletService.debitWallet(1L, 1200.0));
+        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> walletService.debitWallet(1L, 1200.0));
         assertEquals("Insufficient USD balance.", exception.getMessage());
         verify(walletRepository, never()).save(wallet);
     }

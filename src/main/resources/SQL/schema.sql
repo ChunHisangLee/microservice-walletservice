@@ -1,29 +1,29 @@
+-- Create the `walletdb` database
 CREATE DATABASE walletdb;
 
+-- Connect to `walletdb`
 \c walletdb
 
--- After connecting to the `walletdb` database, run the following script:
-
--- Drop users' table if it exists
+-- Drop the users' table if it exists
 DROP TABLE IF EXISTS users CASCADE;
 
 -- Create users' table
 CREATE TABLE users
 (
-    id       SERIAL PRIMARY KEY,
-    name     VARCHAR(100)        NOT NULL,
-    email    VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255)        NOT NULL,
-    CONSTRAINT email_unique UNIQUE (email)
+    id       SERIAL PRIMARY KEY,            -- Auto-incrementing primary key
+    name     VARCHAR(100)        NOT NULL,  -- User's name, not nullable
+    email    VARCHAR(255) UNIQUE NOT NULL,  -- Unique email, not nullable
+    password VARCHAR(255)        NOT NULL,  -- User's password, not nullable
+    CONSTRAINT email_unique UNIQUE (email)  -- Ensure email uniqueness
 );
 
--- Create indexes
+-- Create index for faster lookup by email
 CREATE INDEX idx_email ON users (email);
 
--- Drop users' table if it exists
+-- Drop the wallet table if it exists
 DROP TABLE IF EXISTS wallet CASCADE;
 
--- Create wallet's table
+-- Create the wallet table
 CREATE TABLE wallet
 (
     id          SERIAL PRIMARY KEY,                                                   -- Auto-incrementing ID for the wallet (INTEGER instead of BIGSERIAL)
@@ -34,6 +34,5 @@ CREATE TABLE wallet
     CONSTRAINT check_usd_balance CHECK (usd_balance >= 0),                            -- Ensure USD balance is non-negative
     CONSTRAINT check_btc_balance CHECK (btc_balance >= 0)                             -- Ensure BTC balance is non-negative
 );
-
--- Create an index for faster lookups by user_id
+-- Create an index for faster lookup by user_id
 CREATE INDEX idx_user_id ON wallet (user_id);

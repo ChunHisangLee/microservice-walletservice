@@ -15,7 +15,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue userCreatedQueue() {
-        return new Queue(USER_CREATED_QUEUE, false);
+        return new Queue(USER_CREATED_QUEUE, true);  // Durable queue for persistence
     }
 
     @Bean
