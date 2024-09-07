@@ -1,6 +1,13 @@
 # Multi-stage build to reduce final image size
 # Stage 1: Build the application using Maven
-FROM maven:3.8.6-openjdk-21 AS build
+FROM maven:3.8.6 AS build
+
+# Install OpenJDK 21 manually
+RUN apt-get update && apt-get install -y openjdk-21-jdk
+
+# Set the environment variables for Java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:${PATH}"
 
 # Set the working directory inside the container
 WORKDIR /app
