@@ -1,6 +1,5 @@
 package com.jack.walletservice.listener;
 
-import com.jack.walletservice.entity.Wallet;
 import com.jack.walletservice.message.WalletCreationMessage;
 import com.jack.walletservice.service.WalletService;
 import org.slf4j.Logger;
@@ -18,16 +17,16 @@ public class WalletCreateListener {
         this.walletService = walletService;
     }
 
+    // Listen to the queue for wallet creation messages
     @RabbitListener(queues = "${app.wallet.queue.create}")
     public void handleWalletCreation(WalletCreationMessage message) {
-        logger.info("Received Wallet Creation message: UserID: {}", message.getUserId());
-
+        logger.info("Received Wallet Creation message for user ID: {}", message.getUserId());
         try {
-            Wallet wallet = walletService.createWallet(message.getUserId());
+            walletService.createWallet(message.getUserId());
             walletService.creditWallet(message.getUserId(), message.getInitialBalance());
-            logger.info("Wallet created and credited for user ID: {}", message.getUserId());
+            logger.info("Wallet created and credited with initial balance for user ID: {}", message.getUserId());
         } catch (Exception e) {
-            logger.error("Failed to process wallet creation for user ID: {}. Error: {}", message.getUserId(), e.getMessage(), e);
+            logger.error("Failed to process wallet creation message for user ID: {}. Error: {}", message.getUserId(), e.getMessage(), e);
         }
     }
 }
