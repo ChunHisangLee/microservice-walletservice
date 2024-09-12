@@ -1,7 +1,15 @@
 package com.jack.walletservice.dto;
 
-/**
- * @author Jack Lee
- */
+import lombok.*;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class WalletResponseDTO {
+    private Long id;
+    private Long userId;
+    private double usdBalance;
+    private double btcBalance;
 }
