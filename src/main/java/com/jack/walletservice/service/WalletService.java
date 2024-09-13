@@ -17,4 +17,6 @@ public interface WalletService {
     void debitWallet(Long userId, Double amount);
 
     WalletBalanceDTO getWalletBalance(Long userId);
+
+    boolean walletExists(Long userId);
 }

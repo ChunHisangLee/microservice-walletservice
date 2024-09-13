@@ -21,6 +21,11 @@ public class WalletUpdateListener {
         logger.info("Received Wallet Update for UserID: {}. USD: {}, BTC: {}", userId, usdAmount, btcAmount);
 
         try {
+            if (usdAmount < 0 || btcAmount < 0) {
+                logger.error("Invalid update amounts for user ID: {}. USD: {}, BTC: {}. Amounts must be non-negative.", userId, usdAmount, btcAmount);
+                return;
+            }
+
             walletService.updateWallet(userId, usdAmount, btcAmount);
             logger.info("Wallet updated successfully for user ID: {}", userId);
         } catch (Exception e) {

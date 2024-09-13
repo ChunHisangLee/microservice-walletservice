@@ -2,6 +2,7 @@ package com.jack.walletservice.listener;
 
 import com.jack.walletservice.dto.WalletResponseDTO;
 import com.jack.walletservice.entity.Wallet;
+import com.jack.walletservice.exception.WalletNotFoundException;
 import com.jack.walletservice.service.WalletService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +39,27 @@ public class WalletBalanceListener {
 
         try {
             Wallet wallet = walletService.getWalletByUserId(userId);
+
             WalletResponseDTO responseDTO = WalletResponseDTO.builder()
                     .userId(wallet.getUserId())
                     .usdBalance(wallet.getUsdBalance())
                     .btcBalance(wallet.getBtcBalance())
                     .build();
 
-            // Send the response back to the replyToQueue
+            // Send the successful response to the replyToQueue
             rabbitTemplate.convertAndSend(replyToQueue, responseDTO);
             logger.info("Wallet balance sent to replyToQueue: {} for UserID: {}", replyToQueue, userId);
 
+        } catch (WalletNotFoundException e) {
+            logger.error("Wallet not found for user ID: {}", userId);
+            // Send an error message to the replyToQueue
+            String errorMessage = "Wallet not found for user ID: " + userId;
+            rabbitTemplate.convertAndSend(replyToQueue, errorMessage);
         } catch (Exception e) {
             logger.error("Failed to retrieve wallet balance for user ID: {}. Error: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve wallet balance.");
+            // Send a generic error message to the replyToQueue
+            String errorMessage = "Failed to retrieve wallet balance for user ID: " + userId;
+            rabbitTemplate.convertAndSend(replyToQueue, errorMessage);
         }
     }
 }

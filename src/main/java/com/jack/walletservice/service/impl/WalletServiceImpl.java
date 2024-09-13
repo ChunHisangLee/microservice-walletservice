@@ -117,6 +117,11 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    public boolean walletExists(Long userId) {
+        return walletRepository.findByUserId(userId).isPresent();
+    }
+
+    @Override
     public void updateWalletBalance(WalletBalanceDTO walletBalanceDTO) {
         Wallet wallet = getWalletByUserId(walletBalanceDTO.getUserId());
         wallet.setUsdBalance(walletBalanceDTO.getUsdBalance());
