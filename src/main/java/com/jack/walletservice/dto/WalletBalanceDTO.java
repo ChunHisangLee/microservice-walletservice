@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WalletResponseDTO implements Serializable {
+public class WalletBalanceDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long userId;
     private double usdBalance;

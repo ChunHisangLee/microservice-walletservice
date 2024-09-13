@@ -25,6 +25,13 @@ spring:
     username: guest
     password: guest
 
+  data:
+    redis:
+      host: local
+      port: 6379
+      password: Ab123456
+      timeout: 60000ms  # 60 seconds, specified in milliseconds
+
 # Custom application-specific settings
 app:
   wallet:

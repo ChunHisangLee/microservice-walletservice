@@ -1,5 +1,6 @@
 package com.jack.walletservice.service;
 
+import com.jack.walletservice.dto.WalletBalanceDTO;
 import com.jack.walletservice.entity.Wallet;
 
 public interface WalletService {
@@ -11,5 +12,9 @@ public interface WalletService {
 
     void updateWallet(Long userId, Double usdAmount, Double btcAmount);
 
+    void updateWalletBalance(WalletBalanceDTO walletBalanceDTO);
+
     void debitWallet(Long userId, Double amount);
+
+    WalletBalanceDTO getWalletBalance(Long userId);
 }
